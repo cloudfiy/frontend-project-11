@@ -9,6 +9,47 @@ const makeSchema = (links) => {
   return schema;
 };
 
+const updateData = (links, state, watchedState) => {
+  setTimeout(() => {
+    const promises = links.map(
+      (link) => new Promise((resolve, reject) => {
+        getData(
+          link,
+          ({ posts }) => {
+            const newPosts = posts
+              .filter(
+                (post) => !state.posts.some(
+                  (existingPost) => existingPost.title === post.title,
+                ),
+              )
+              .map((post) => ({ id: _.uniqueId(), ...post }));
+
+            resolve(newPosts);
+          },
+          (err) => {
+            console.log(err);
+            reject(err);
+          },
+        );
+      }),
+    );
+
+    Promise.all(promises)
+      .then((allNewPosts) => {
+        const flattenedPosts = allNewPosts.flat();
+        if (flattenedPosts.length > 0) {
+          watchedState.posts.unshift(...flattenedPosts);
+        }
+        console.log(state.posts);
+        updateData(links, state, watchedState);
+      })
+      .catch((err) => {
+        console.log(err);
+        updateData(links, state, watchedState);
+      });
+  }, 5000);
+};
+
 export default function app() {
   initializeI18next()
     .then((i18nextInstance) => {
@@ -53,9 +94,7 @@ export default function app() {
                   ...post,
                 }));
                 watchedState.feeds.push(...data.feeds);
-                watchedState.posts.push(...newPosts);
-
-                console.log(state);
+                watchedState.posts.unshift(...newPosts);
               },
               (errorMessage) => {
                 watchedState.error = errorMessage;
@@ -67,6 +106,8 @@ export default function app() {
             watchedState.error = currentError;
           });
       });
+
+      updateData(state.links, state, watchedState);
     })
     .catch((err) => {
       console.error('Initialization failed:', err);

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import onChange from 'on-change';
 
 const renderCard = (container, title, i18n) => {
@@ -20,7 +21,12 @@ const renderCard = (container, title, i18n) => {
 };
 
 const renderFeeds = (feeds, container) => {
-  const ulElement = document.createElement('ul');
+  let ulElement = container.querySelector('ul');
+
+  if (!ulElement) {
+    ulElement = document.createElement('ul');
+  }
+
   ulElement.classList.add('list-group', 'border-0', 'rounded-0');
 
   const feedsItems = feeds
@@ -41,6 +47,7 @@ const renderFeeds = (feeds, container) => {
 const renderPosts = (posts, container) => {
   const ulElement = document.createElement('ul');
   ulElement.classList.add('list-group', 'border-0', 'rounded-0');
+
   const postsItems = posts.map((post) => {
     const liElement = document.createElement('li');
     liElement.classList.add(
@@ -73,7 +80,8 @@ const renderPosts = (posts, container) => {
   });
 
   ulElement.append(...postsItems);
-  container.append(ulElement);
+
+  container.replaceChildren(ulElement);
 };
 
 const render = (state, i18n) => {
