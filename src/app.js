@@ -1,6 +1,8 @@
 import * as yup from 'yup';
+import _ from 'lodash';
 import render from './render.js';
 import initializeI18next from './i18n.js';
+import getData from './services/getData.js';
 
 const makeSchema = (links) => {
   const schema = yup.string().url().notOneOf(links);
@@ -22,6 +24,8 @@ export default function app() {
 
       const state = {
         links: [],
+        feeds: [],
+        posts: [],
         error: null,
       };
 
@@ -39,8 +43,24 @@ export default function app() {
         schema
           .validate(url)
           .then((validateUrl) => {
-            watchedState.links.push(validateUrl);
-            state.error = null;
+            getData(
+              validateUrl,
+              (data) => {
+                watchedState.links.push(validateUrl);
+                state.error = null;
+                const newPosts = data.posts.map((post) => ({
+                  id: _.uniqueId(),
+                  ...post,
+                }));
+                watchedState.feeds.push(...data.feeds);
+                watchedState.posts.push(...newPosts);
+
+                console.log(state);
+              },
+              (errorMessage) => {
+                watchedState.error = errorMessage;
+              },
+            );
           })
           .catch((err) => {
             const [currentError] = err.errors;
