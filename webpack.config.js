@@ -1,10 +1,5 @@
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import ESLintPlugin from 'eslint-webpack-plugin';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export default {
   mode: process.env.NODE_ENV || 'development',
@@ -39,13 +34,5 @@ export default {
   ],
   output: {
     clean: true,
-  },
-  devServer: {
-    static: {
-      directory: resolve(__dirname, 'dist'),
-    },
-    compress: true,
-    port: 9000,
-    hot: true,
   },
 };

@@ -42,6 +42,23 @@ const renderCard = (container, title, i18n) => {
   return card;
 };
 
+const createOrUpdateUlElement = (parentElement, classNameArray = []) => {
+  let ulElement = parentElement.querySelector('ul');
+  if (!ulElement) {
+    ulElement = document.createElement('ul');
+    ulElement.classList.add(
+      'list-group',
+      'border-0',
+      'rounded-0',
+      ...classNameArray,
+    );
+    parentElement.append(ulElement);
+  } else {
+    ulElement.innerHTML = '';
+  }
+  return ulElement;
+};
+
 const renderFeeds = (state, i18n) => {
   const feeds = document.querySelector('.feeds');
   let feedsCard = feeds.querySelector('.card');
@@ -49,15 +66,7 @@ const renderFeeds = (state, i18n) => {
     feedsCard = renderCard(feeds, 'feeds', i18n);
   }
 
-  let ulElement = feedsCard.querySelector('ul');
-
-  if (!ulElement) {
-    ulElement = document.createElement('ul');
-    ulElement.classList.add('list-group', 'border-0', 'rounded-0');
-    feedsCard.append(ulElement);
-  } else {
-    ulElement.innerHTML = '';
-  }
+  const ulElement = createOrUpdateUlElement(feedsCard);
 
   const feedsItems = state.feeds
     .map(
@@ -115,14 +124,7 @@ const renderPosts = (state, i18n) => {
     postsCard = renderCard(posts, 'posts', i18n);
   }
 
-  let ulElement = postsCard.querySelector('ul');
-  if (!ulElement) {
-    ulElement = document.createElement('ul');
-    ulElement.classList.add('list-group', 'border-0', 'rounded-0');
-    postsCard.append(ulElement);
-  } else {
-    ulElement.innerHTML = '';
-  }
+  const ulElement = createOrUpdateUlElement(postsCard);
 
   renderPostList(state.posts, ulElement);
 };
