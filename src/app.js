@@ -40,7 +40,6 @@ const updateData = (links, state, watchedState) => {
         if (flattenedPosts.length > 0) {
           watchedState.posts.unshift(...flattenedPosts);
         }
-        console.log(state.posts);
         updateData(links, state, watchedState);
       })
       .catch((err) => {
@@ -67,6 +66,8 @@ export default function app() {
         links: [],
         feeds: [],
         posts: [],
+        read: [],
+        currentOpen: null,
         error: null,
       };
 
@@ -105,6 +106,18 @@ export default function app() {
             const [currentError] = err.errors;
             watchedState.error = currentError;
           });
+      });
+
+      const modal = document.getElementById('modal');
+      modal.addEventListener('show.bs.modal', (e) => {
+        const btn = e.relatedTarget;
+        const postId = btn.getAttribute('data-id');
+        watchedState.currentOpen = state.posts.find(
+          (post) => post.id === postId,
+        );
+        if (!state.read.includes(postId)) {
+          watchedState.read.push(postId);
+        }
       });
 
       updateData(state.links, state, watchedState);

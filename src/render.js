@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import onChange from 'on-change';
 
 const renderCard = (container, title, i18n) => {
@@ -45,7 +44,11 @@ const renderFeeds = (feeds, container) => {
 };
 
 const renderPosts = (posts, container) => {
-  const ulElement = document.createElement('ul');
+  let ulElement = container.querySelector('ul');
+  if (!ulElement) {
+    ulElement = document.createElement('ul');
+  }
+
   ulElement.classList.add('list-group', 'border-0', 'rounded-0');
 
   const postsItems = posts.map((post) => {
@@ -79,9 +82,28 @@ const renderPosts = (posts, container) => {
     return liElement;
   });
 
-  ulElement.append(...postsItems);
+  ulElement.replaceChildren(...postsItems);
+  container.append(ulElement);
+};
 
-  container.replaceChildren(ulElement);
+const renderModal = (container, post) => {
+  const modalTitle = container.querySelector('.modal-title');
+  modalTitle.textContent = post.title;
+
+  const modalBody = container.querySelector('.modal-body');
+  modalBody.textContent = post.description;
+
+  const postLink = container.querySelector('a');
+  postLink.href = post.link;
+};
+
+const renderReadPosts = (readPostsId) => {
+  readPostsId.forEach((id) => {
+    const link = document.querySelector(`a[data-id="${id}"]`);
+    link.classList.remove('fw-bold');
+    link.classList.add('fw-normal');
+    link.classList.add('link-secondary');
+  });
 };
 
 const render = (state, i18n) => {
@@ -91,6 +113,7 @@ const render = (state, i18n) => {
     const feedback = document.querySelector('.feedback');
     const feeds = document.querySelector('.feeds');
     const posts = document.querySelector('.posts');
+    const modal = document.querySelector('.modal');
 
     switch (path) {
       case 'links':
@@ -121,6 +144,14 @@ const render = (state, i18n) => {
           postsCard = renderCard(posts, 'posts', i18n);
         }
         renderPosts(state.posts, postsCard);
+        break;
+      }
+      case 'currentOpen': {
+        renderModal(modal, state.currentOpen);
+        break;
+      }
+      case 'read': {
+        renderReadPosts(state.read);
         break;
       }
       default:
