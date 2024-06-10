@@ -29,14 +29,14 @@ const fetchData = (link, state) => new Promise((resolve, reject) => {
   );
 });
 
-const updatePosts = (newPosts, watchedState) => {
+const updatePosts = (newPosts, view) => {
   const flattenedPosts = newPosts.flat();
   if (flattenedPosts.length > 0) {
-    watchedState.posts.unshift(...flattenedPosts);
+    view.posts.unshift(...flattenedPosts);
   }
 };
 
-const handleClickOnLinks = (watchedState, state) => {
+const handleClickOnLinks = (view, state) => {
   const container = document.querySelector('.flex-grow-1');
 
   container.addEventListener('click', (e) => {
@@ -44,34 +44,34 @@ const handleClickOnLinks = (watchedState, state) => {
     if (link) {
       const linkId = link.getAttribute('data-id');
       if (!state.read.includes(linkId)) {
-        watchedState.read.push(linkId);
+        view.read.push(linkId);
       }
     }
   });
 };
 
-const updateData = (links, state, watchedState) => {
+const updateData = (links, state, view) => {
   setTimeout(() => {
     const promises = links.map((link) => fetchData(link, state));
 
     Promise.all(promises)
       .then((allNewPosts) => {
-        updatePosts(allNewPosts, watchedState);
-        updateData(links, state, watchedState);
+        updatePosts(allNewPosts, view);
+        updateData(links, state, view);
       })
       .catch((err) => {
         console.log(err);
-        updateData(links, state, watchedState);
+        updateData(links, state, view);
       });
   }, 5000);
 };
 
-const handleModal = (e, watchedState, state) => {
+const handleModal = (e, view, state) => {
   const btn = e.relatedTarget;
   const postId = btn.getAttribute('data-id');
   const curPost = state.posts.find((post) => post.id === postId);
   if (!state.read.includes(postId)) {
-    watchedState.read.push(postId);
+    view.read.push(postId);
   }
 
   return curPost;
@@ -99,7 +99,7 @@ export default function app() {
         error: null,
       };
 
-      const watchedState = render(state, i18nextInstance);
+      const view = render(state, i18nextInstance);
 
       const formElement = document.querySelector('.rss-form');
 
@@ -116,35 +116,33 @@ export default function app() {
             getData(
               validateUrl,
               (data) => {
-                watchedState.links.push(validateUrl);
+                view.links.push(validateUrl);
                 state.error = null;
                 const newPosts = data.posts.map((post) => ({
                   id: _.uniqueId(),
                   ...post,
                 }));
-                watchedState.feeds.push(...data.feeds);
-                watchedState.posts.unshift(...newPosts);
+                view.feeds.push(...data.feeds);
+                view.posts.unshift(...newPosts);
               },
               (errorMessage) => {
-                watchedState.error = errorMessage;
+                view.error = errorMessage;
               },
             );
           })
           .catch((err) => {
             const [currentError] = err.errors;
-            watchedState.error = currentError;
+            view.error = currentError;
           });
       });
 
-      // const link = document.querySelectorAll('a');
-
       const modal = document.getElementById('modal');
       modal.addEventListener('show.bs.modal', (e) => {
-        const curPost = handleModal(e, watchedState, state);
-        watchedState.currentOpen = curPost;
+        const curPost = handleModal(e, view, state);
+        view.currentOpen = curPost;
       });
-      handleClickOnLinks(watchedState, state);
-      updateData(state.links, state, watchedState);
+      handleClickOnLinks(view, state);
+      updateData(state.links, state, view);
     })
     .catch((err) => {
       console.error('Initialization failed:', err);
