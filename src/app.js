@@ -8,38 +8,41 @@ const makeSchema = (links) => {
   const schema = yup.string().url().notOneOf(links);
   return schema;
 };
+const fetchData = (link, state) => new Promise((resolve, reject) => {
+  getData(
+    link,
+    ({ posts }) => {
+      const newPosts = posts
+        .filter(
+          (post) => !state.posts.some(
+            (existingPost) => existingPost.title === post.title,
+          ),
+        )
+        .map((post) => ({ id: _.uniqueId(), ...post }));
+
+      resolve(newPosts);
+    },
+    (err) => {
+      console.log(err);
+      reject(err);
+    },
+  );
+});
+
+const updatePosts = (newPosts, watchedState) => {
+  const flattenedPosts = newPosts.flat();
+  if (flattenedPosts.length > 0) {
+    watchedState.posts.unshift(...flattenedPosts);
+  }
+};
 
 const updateData = (links, state, watchedState) => {
   setTimeout(() => {
-    const promises = links.map(
-      (link) => new Promise((resolve, reject) => {
-        getData(
-          link,
-          ({ posts }) => {
-            const newPosts = posts
-              .filter(
-                (post) => !state.posts.some(
-                  (existingPost) => existingPost.title === post.title,
-                ),
-              )
-              .map((post) => ({ id: _.uniqueId(), ...post }));
-
-            resolve(newPosts);
-          },
-          (err) => {
-            console.log(err);
-            reject(err);
-          },
-        );
-      }),
-    );
+    const promises = links.map((link) => fetchData(link, state));
 
     Promise.all(promises)
       .then((allNewPosts) => {
-        const flattenedPosts = allNewPosts.flat();
-        if (flattenedPosts.length > 0) {
-          watchedState.posts.unshift(...flattenedPosts);
-        }
+        updatePosts(allNewPosts, watchedState);
         updateData(links, state, watchedState);
       })
       .catch((err) => {
@@ -47,6 +50,17 @@ const updateData = (links, state, watchedState) => {
         updateData(links, state, watchedState);
       });
   }, 5000);
+};
+
+const handleModal = (e, watchedState, state) => {
+  const btn = e.relatedTarget;
+  const postId = btn.getAttribute('data-id');
+  const curPost = state.posts.find((post) => post.id === postId);
+  if (!state.read.includes(postId)) {
+    watchedState.read.push(postId);
+  }
+
+  return curPost;
 };
 
 export default function app() {
@@ -110,14 +124,8 @@ export default function app() {
 
       const modal = document.getElementById('modal');
       modal.addEventListener('show.bs.modal', (e) => {
-        const btn = e.relatedTarget;
-        const postId = btn.getAttribute('data-id');
-        watchedState.currentOpen = state.posts.find(
-          (post) => post.id === postId,
-        );
-        if (!state.read.includes(postId)) {
-          watchedState.read.push(postId);
-        }
+        const curPost = handleModal(e, watchedState, state);
+        watchedState.currentOpen = curPost;
       });
 
       updateData(state.links, state, watchedState);
