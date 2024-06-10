@@ -9,4 +9,4 @@
 Paste the RSS link to subscribe to the news feed.
 
 ## demo:
-https://rssagregator-j4hm50wm9-ankxds-projects-5d34eff5.vercel.app
+https://rssagregator-n67pp2veb-ankxds-projects-5d34eff5.vercel.app
