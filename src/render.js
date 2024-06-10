@@ -152,32 +152,18 @@ const renderReadPosts = (readPostsId) => {
 
 const render = (state, i18n) => {
   const watchedState = onChange(state, (path, current) => {
-    switch (path) {
-      case 'links':
-        handleSuccess(i18n);
-        break;
-      case 'error':
-        handleError(current, i18n);
-        break;
-      case 'feeds': {
-        renderFeeds(state, i18n);
-        break;
-      }
-      case 'posts': {
-        renderPosts(state, i18n);
-        break;
-      }
-      case 'currentOpen': {
-        renderModal(state);
-        break;
-      }
-      case 'read': {
-        renderReadPosts(state.read);
-        break;
-      }
-      default:
-        console.log('Unknown path');
-    }
+    const renderFuncs = {
+      links: () => handleSuccess(i18n),
+      error: () => handleError(current, i18n),
+      feeds: () => renderFeeds(state, i18n),
+      posts: () => renderPosts(state, i18n),
+      currentOpen: () => renderModal(state),
+      read: () => renderReadPosts(state.read),
+    };
+
+    const renderFunc = renderFuncs[path];
+    if (renderFunc) renderFunc();
+    else console.log('Unknown path');
   });
 
   return watchedState;

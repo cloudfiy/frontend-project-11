@@ -36,6 +36,20 @@ const updatePosts = (newPosts, watchedState) => {
   }
 };
 
+const handleClickOnLinks = (watchedState, state) => {
+  const container = document.querySelector('.flex-grow-1');
+
+  container.addEventListener('click', (e) => {
+    const link = e.target.closest('a[data-id]');
+    if (link) {
+      const linkId = link.getAttribute('data-id');
+      if (!state.read.includes(linkId)) {
+        watchedState.read.push(linkId);
+      }
+    }
+  });
+};
+
 const updateData = (links, state, watchedState) => {
   setTimeout(() => {
     const promises = links.map((link) => fetchData(link, state));
@@ -122,12 +136,14 @@ export default function app() {
           });
       });
 
+      // const link = document.querySelectorAll('a');
+
       const modal = document.getElementById('modal');
       modal.addEventListener('show.bs.modal', (e) => {
         const curPost = handleModal(e, watchedState, state);
         watchedState.currentOpen = curPost;
       });
-
+      handleClickOnLinks(watchedState, state);
       updateData(state.links, state, watchedState);
     })
     .catch((err) => {
