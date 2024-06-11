@@ -3,9 +3,11 @@ function parser(data) {
   const xmlDoc = parse.parseFromString(data, 'text/xml');
   const parseError = xmlDoc.querySelector('parsererror');
   if (parseError) {
-    console.log(parseError.textContent);
+    const error = new Error(parseError.textContent);
+    error.message = 'invalid RSS';
+    error.isParsingError = true;
+    throw error;
   }
-
   const feedTitle = xmlDoc.querySelector('channel > title').textContent;
   const feedDescription = xmlDoc.querySelector(
     'channel> description',

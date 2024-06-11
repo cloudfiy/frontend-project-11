@@ -54,7 +54,7 @@ const createOrUpdateUlElement = (parentElement, classNameArray = []) => {
     );
     parentElement.append(ulElement);
   } else {
-    ulElement.innerHTML = '';
+    ulElement.replaceChildren();
   }
   return ulElement;
 };
@@ -62,23 +62,34 @@ const createOrUpdateUlElement = (parentElement, classNameArray = []) => {
 const renderFeeds = (state, i18n) => {
   const feeds = document.querySelector('.feeds');
   let feedsCard = feeds.querySelector('.card');
+
   if (!feedsCard) {
     feedsCard = renderCard(feeds, 'feeds', i18n);
   }
 
   const ulElement = createOrUpdateUlElement(feedsCard);
 
-  const feedsItems = state.feeds
-    .map(
-      (feed) => `
-    <li class="list-group-item border-0 border-end-0">
-    <h3 class="h6 m-0">${feed.feedTitle}</h3>
-    <p class="m-0 small text-black-50">${feed.feedDescription}</p>
-    </li>
-    `,
-    )
-    .join('');
-  ulElement.innerHTML = feedsItems;
+  while (ulElement.firstChild) {
+    ulElement.removeChild(ulElement.firstChild);
+  }
+
+  state.feeds.forEach((feed) => {
+    const liElement = document.createElement('li');
+    liElement.classList.add('list-group-item', 'border-0', 'border-end-0');
+
+    const h3Element = document.createElement('h3');
+    h3Element.classList.add('h6', 'm-0');
+    h3Element.textContent = feed.feedTitle;
+
+    const pElement = document.createElement('p');
+    pElement.classList.add('m-0', 'small', 'text-black-50');
+    pElement.textContent = feed.feedDescription;
+
+    liElement.appendChild(h3Element);
+    liElement.appendChild(pElement);
+
+    ulElement.appendChild(liElement);
+  });
 };
 
 const createPostListItem = (post) => {
